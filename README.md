@@ -16,6 +16,9 @@ But you can also preprocess any other stuff (even Lua code itself)
 ### Usage
     -- load lcpp (ffi.cdef wrapper turned on per default)
     local lcpp = require("lcpp")
+
+    -- add include paths
+    table.insert(lcpp.INCLUDE_PATHS, '/path/to/header/')
         
     -- just use LuaJIT ffi and lcpp together
     ffi.cdef("#include <your_header.h>")

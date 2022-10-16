@@ -156,6 +156,7 @@ lcpp.LCPP_TEST        = false   -- whether to run lcpp unit tests when loading l
 lcpp.ENV              = {}      -- static predefines (env-like)
 lcpp.FAST             = false   -- perf. tweaks when enabled. con: breaks minor stuff like __LINE__ macros
 lcpp.DEBUG            = false
+lcpp.INCLUDE_PATHS	  = {}		-- paths for header files
 
 -- PREDEFINES
 local __FILE__        = "__FILE__"
@@ -1372,14 +1373,27 @@ function lcpp.compile(code, predefines, macro_sources)
 	return output, state
 end
 
+local function checkIncludePaths(filename)
+	local file = io.open(filename, 'r')
+	if file then return file end
+	for _, path in ipairs(lcpp.INCLUDE_PATHS) do
+		print('looking for '..path..'/'..filename)
+		file = io.open(path..'/'..filename, 'r')
+		if file then return file end
+	end
+	return nil
+end
+
 --- preprocesses a file
 -- @param filename the file to read
 -- @param predefines OPTIONAL a table of predefined variables
 -- @usage out, state = lcpp.compileFile("../odbg/plugin.h", {["MAX_PAH"]=260, ["UNICODE"]=true})
 function lcpp.compileFile(filename, predefines, macro_sources, next, _local)
 	if not filename then error("processFile() arg1 has to be a string") end
-	local file = io.open(filename, 'r')
-	if not file then error("file not found: "..filename) end
+	local file = checkIncludePaths(filename)
+	if not file then
+		error("file not found: "..filename)
+	end
 	local code = file:read('*a')
 	predefines = predefines or {}
 	predefines[__FILE__] = filename
